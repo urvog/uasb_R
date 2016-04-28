@@ -74,4 +74,24 @@ pairs(~DataTitanicValido$Age+DataTitanicValido$SibSp+DataTitanicValido$Fare, dat
 #plot ticket vs edad agrupados por Pclass
 xyplot(Fare~Age|Pclass, data = DataTitanicValido, xlab = "Costo Ticket", ylab = "Edad", main = "Graficos Lattice")
 xyplot(Fare~Age|Embarked, data = DataTitanicValido, xlab = "Costo Ticket", ylab = "Edad", main = "Graficos Lattice")
+barchart(Age~Survived|Embarked, data = DataTitanicValido, groups = Pclass, xlab = "Costo Ticket", ylab = "Edad",
+         main = "Graficos Lattice", auto.key = TRUE)
 dev.off()
+
+
+##libreria GGPlot
+library(ggplot2)
+
+#graficos basicos de qplot
+qplot(Fare,Age, data = DataTitanicValido, color = Pclass)
+
+#Lineas de tendencia
+qplot(Fare,Age, data = DataTitanicValido, color = Pclass, geom = c("point","smooth"))
+
+#grafico multidimensional fare,Age coloreado por clase y agrupado por lugar de embarque
+qplot(Fare,Age, data = DataTitanicValido, color = Pclass, facets = Embarked~., main = "Grafico GGPLOT")
+
+#histograma
+qplot(Age, data = DataTitanicValido, fill = Pclass, facets = .~Embarked, main = "Grafico GGPLOT")
+
+
