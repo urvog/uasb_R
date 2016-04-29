@@ -49,7 +49,7 @@ text(bp, y = d_clase+20,labels = d_clase, xpd = TRUE)
 title(main = "Cantidad de personas por clase", xlab = "Clases", ylab = "Frecuencia")
 
 #una simple torta
-torta<-pie(d_clase, c("1ra Clase","2 Clase","3ra Clase"), col = colores[sample(1:655,3)] )
+torta<-pie(d_clase, c("1ra Clase","2da Clase","3ra Clase"), col = colores[sample(1:655,3)] )
 title(main = "Distribucion de personas por clase")
 
 
@@ -63,16 +63,19 @@ title(main = "Promedios edad por clase", xlab = "Clases", ylab = "Promedio edad"
 plot(DataTitanicValido$Age,DataTitanicValido$Fare, col = colores[sample(1:655,2)], pch = 19, main = "Edad vs Costo Ticket",
      xlab = "Edad", ylab = "Costo Ticket")
 abline(lm(DataTitanicValido$Age~DataTitanicValido$Fare), col = "red")
+abline(h = 200, col ="red")
+abline(v = 70, col = "green")
 
 #Plot Hermanos vs Padres e hijos 
-bp<-plot(DataTitanicValido$Fare,DataTitanicValido$Edad, col = colores[sample(1:655,2)], pch = 19, main = "Tickets vs Edad",
-     xlab = "Costo Tickets", ylab = "Edad", ylim = c(0,100))
+bp<-plot(DataTitanicValido$Fare,DataTitanicValido$Parch, col = colores[sample(1:655,2)], pch = 19, main = "Tickets vs Edad",
+     xlab = "Costo Tickets", ylab = "Parch", ylim = c(0,6))
 
 pairs(~DataTitanicValido$Age+DataTitanicValido$SibSp+DataTitanicValido$Fare, data = DataTitanicValido)
 
 ##libreria lattice
+library(lattice)
 #plot ticket vs edad agrupados por Pclass
-xyplot(Fare~Age|Pclass, data = DataTitanicValido, xlab = "Costo Ticket", ylab = "Edad", main = "Graficos Lattice")
+xyplot(Fare~Age|Survived, data = DataTitanicValido, xlab = "Costo Ticket", ylab = "Edad", main = "Graficos Lattice")
 xyplot(Fare~Age|Embarked, data = DataTitanicValido, xlab = "Costo Ticket", ylab = "Edad", main = "Graficos Lattice")
 barchart(Age~Survived|Embarked, data = DataTitanicValido, groups = Pclass, xlab = "Costo Ticket", ylab = "Edad",
          main = "Graficos Lattice", auto.key = TRUE)
@@ -92,6 +95,87 @@ qplot(Fare,Age, data = DataTitanicValido, color = Pclass, geom = c("point","smoo
 qplot(Fare,Age, data = DataTitanicValido, color = Pclass, facets = Embarked~., main = "Grafico GGPLOT")
 
 #histograma
-qplot(Age, data = DataTitanicValido, fill = Pclass, facets = .~Embarked, main = "Grafico GGPLOT")
+qplot(Age, data = DataTitanicValido, fill = Pclass, facets = .~Embarked, main = "Grafico GGPLOT", binwidth = 5)
 
 
+#MODELANDO CON CLUSTERS ALGORITMO KMEANS
+
+#iniciamos creando subconjuntos de datos los cuales queremos analizar (edad vs costo ticket)
+d_cluster<-data.frame(edad = DataTitanicValido$Age, costo_ticket = DataTitanicValido$Fare)
+
+d_kmeans<-kmeans(d_cluster,centers = 4, iter.max = 100)
+
+#agregamos la columna con los datos del cluster
+d_cluster$cluster<-d_kmeans$cluster
+
+#mostramos informacion de los datos del cluster
+head(d_kmeans)
+head(d_cluster)
+
+#graficamos los puntos y los centroides utilizando el atributo "centers:"
+plot(d_cluster$edad,d_cluster$costo_ticket, col = d_kmeans$cluster, main = "Clustering con K-means",
+     xlab = "Edad", ylab = "Costo Ticket")
+points(d_kmeans$centers, pch = 8, cex = 2)
+
+write.table(d_cluster,"titanic_K-means.csv", sep = ",", row.names = FALSE)
+
+#kmeans con 3 variables
+library(scatterplot3d)
+d_cluster<-data.frame(edad = DataTitanicValido$Age, 
+                      costo_ticket = DataTitanicValido$Fare,
+                      padres_hijos = DataTitanicValido$Parch)
+
+d_kmeans<-kmeans(d_cluster,centers = 4, iter.max = 100)
+
+#agregamos la columna con los datos del cluster
+d_cluster$cluster<-d_kmeans$cluster
+
+#mostramos informacion de los datos del cluster
+head(d_kmeans)
+head(d_cluster)
+
+#graficamos los datos en plano 3D
+scatterplot3d(d_cluster$edad,d_cluster$costo_ticket,d_cluster$padres_hijos, color = d_kmeans$cluster,
+              main = "Clustering con K-Means", xlab = "Edad", ylab = "Costo Ticket", zlab = "Padres&Hijos",
+              type  = "h")
+
+##MODELOS PREDICTIVOS CON ARBOLES DE DECISION
+#cargamos la libreria para construccion de modelos con arboles decision
+library(rpart)
+m_arbol<-rpart(Survived~Sex + Age + SibSp + Parch + Fare + Embarked + Pclass, data = DataTitanicValido, method = "class")
+
+#mostramos lo generado por el modelo
+m_arbol
+printcp(m_arbol)
+#graficamos el arbol
+par(mfrow = c(1,1), mar = c(2,2,2,2))
+plot(m_arbol, uniform = TRUE)
+text(m_arbol, use.n=TRUE, all=TRUE, cex=.8)
+
+#graficando con mejores librerias
+#install.packages("rattle")
+#install.packages("rpart.plot")
+#install.packages("RColorBrewer")
+
+library(rattle)
+library(rpart.plot)
+library(RColorBrewer)
+
+fancyRpartPlot(m_arbol)
+
+#ahora vamos a predecir el modelo 
+#abrimos el archivo que contiene los datos que queremos predecir
+DataTitanicPredict<-read.table("titanic_predict.csv", sep = ",", header = TRUE)
+#transformamos los valores
+DataTitanicPredict<-transform(DataTitanicPredict, Pclass = factor(Pclass))
+
+prediccion<-predict(m_arbol,DataTitanicPredict, type = "class")
+#mostramos los datos de prediccion
+head(prediccion)
+
+#unimos los datos resultado a la tabla de prediccion
+DataTitanicPredict$prediccion<-prediccion
+#mostramos los valores
+head(DataTitanicPredict,10)
+
+dev.off()
