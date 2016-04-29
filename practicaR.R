@@ -178,4 +178,7 @@ DataTitanicPredict$prediccion<-prediccion
 #mostramos los valores
 head(DataTitanicPredict,10)
 
+#guardamos los datos predecidos
+write.table(DataTitanicPredict,"titanic_predict_tree.csv", sep = ",", row.names = FALSE)
+
 dev.off()
