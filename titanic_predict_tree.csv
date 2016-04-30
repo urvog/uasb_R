@@ -6,6 +6,6 @@
 5,"3","User 5","male",35,0,0,"373450",8.05,"","Southampton","Dead"
 6,"3","User 6","male",33,2,1,"330877",8.4583,"","Queenstown","Dead"
 7,"1","User 7","female",54,2,0,"17463",51.8625,"E46","Southampton","Survived"
-8,"1","User 8","male",2,3,2,"349909",400,"","Southampton","Dead"
+8,"1","User 8","male",2,3,2,"349909",400,"","Southampton","Survived"
 9,"3","User 9","female",27,2,2,"347742",11.1333,"","Southampton","Survived"
 10,"2","User 10","female",14,1,0,"237736",30.0708,"","Cherbourg","Survived"
