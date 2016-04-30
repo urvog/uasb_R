@@ -28,8 +28,9 @@ from productos a join proveedores b on a.proveedorid = b.proveedorid
 str(sql)
 summary(sql)
 
-d_sql<-data.frame(sql$producto,sql$proveedor,sql$categoria,sql$precio,sql$existencia)
+d_sql<-data.frame(producto = sql$producto, prooveedor = sql$proveedor, categoria = sql$categoria, precio = sql$precio, existencia = sql$existencia)
 str(d_sql)
+
 
 
 dbDisconnect(con)
